@@ -2,7 +2,7 @@
 
 class Server
   def get(query)
-    @response << "db: #{@db}\r\n"
+    respond "db: #{@db}"
     return unless (value = query['key'])
     if (lookup = @db[value])
       respond "successful lookup: #{value} => #{lookup}"
