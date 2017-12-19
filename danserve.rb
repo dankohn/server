@@ -35,15 +35,21 @@ class Server
   # rubocop:enable Metrics/MethodLength
 
   def reset_response
-    @response = <<~TOP_OF_RESPONSE
+    @response = []
+    top_of_response = <<~TOP_OF_RESPONSE
       HTTP/1.1 200
       Content-Type: text/plaintext\r\n
       time: #{Time.now}
       TOP_OF_RESPONSE
+    @response << [top_of_response]
   end
 
   def respond(string)
-    @response << "#{string}\r\n"
+    @response << ["#{string}\r\n"]
+  end
+
+  def response_string
+    @response.join
   end
 
   def run_server
@@ -52,7 +58,7 @@ class Server
     while (session = server.accept)
       reset_response
       parse session.gets
-      session.print @response
+      session.print response_string
       session.close
     end
   end
