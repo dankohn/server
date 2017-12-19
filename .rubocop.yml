@@ -1,0 +1,24 @@
+AllCops:
+  EnabledByDefault: true
+  TargetRubyVersion: 2.4
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+Rails:
+  Enabled: false
+Documentation:
+  Enabled: false
+Metrics/AbcSize:
+  Max: 17
+Style/Copyright:
+  Enabled: false
+Style/InlineComment:
+  Enabled: false
+Style/DocumentationMethod:
+  Enabled: false
+Style/MethodCallWithArgsParentheses:
+  Enabled: false
+Style/MissingElse:
+  Enabled: false
+Style/NegatedIf:
+  Enabled: true
+  EnforcedStyle: postfix

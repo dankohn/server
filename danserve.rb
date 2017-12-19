@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class Server
   def get(query)
     @response << "db: #{@db}\r\n"
     query.each do |key, value|
       next unless key == 'key'
-      if lookup = @db[value]
+      if (lookup = @db[value])
         respond "successful lookup: #{value} => #{lookup}"
       else respond "failed lookup: no entry for #{value}"
       end
@@ -11,16 +13,17 @@ class Server
   end
 
   def initialize
-    @db = Hash.new
+    @db = {}
     run_server
   end
 
+  # rubocop:disable Metrics/MethodLength
   def parse(request)
     require 'uri'
     request_url = request.split(' ')[1]
     uri = URI(request_url)
     respond "path: #{uri.path}"
-    query = URI::decode_www_form(uri.query || '').to_h
+    query = URI.decode_www_form(uri.query || '').to_h
     respond "query: #{query}"
     case uri.path
     when '/set'
@@ -29,13 +32,14 @@ class Server
       get query
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
   def reset_response
-    @response = <<~END_OF_RESPONSE
-    HTTP/1.1 200
-    Content-Type: text/plaintext\r\n
-    time: #{Time.now}
-    END_OF_RESPONSE
+    @response = <<~TOP_OF_RESPONSE
+      HTTP/1.1 200
+      Content-Type: text/plaintext\r\n
+      time: #{Time.now}
+      TOP_OF_RESPONSE
   end
 
   def respond(string)
@@ -45,7 +49,7 @@ class Server
   def run_server
     require 'socket'
     server = TCPServer.new 4000
-    while session = server.accept
+    while (session = server.accept)
       reset_response
       parse session.gets
       session.print @response
