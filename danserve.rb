@@ -4,20 +4,18 @@ class Server
 
     server = TCPServer.new 4000
     while session = server.accept
-      request = session.gets
-      reset_response request
-      puts request
+      reset_response
+      parse session.gets
       session.print @response
       session.close
     end
   end
 
-  def reset_response(request)
-    @response = <<-END_OF_RESPONSE
+  def reset_response
+    @response = <<~END_OF_RESPONSE
     HTTP/1.1 200
     Content-Type: text/plaintext\r\n
-    The time is: #{Time.now}
-    request is: #{parse(request)}
+    time: #{Time.now}
     END_OF_RESPONSE
   end
 
@@ -26,8 +24,9 @@ class Server
     require 'uri'
     request_url = request.split(' ')[1]
     uri = URI(request_url)
+    @response << "path: #{uri.path}\r\n"
     query = URI::decode_www_form(uri.query || '').to_h
-    puts uri.path
+    @response << "query: #{query}\r\n"
     case uri.path
     when '/set'
       set query
@@ -37,14 +36,12 @@ class Server
   end
 
   def set(query)
-    puts "set #{query}"
     query.each do |key, value|
-      puts @db
-      puts key
-      puts value
+      @response << "db: #{@db}\r\n"
       @db[key] = value
-      puts "#{key} assigned #{value}"
+      @response << "#{key} => #{value}\r\n"
     end
+    @response << "db: #{@db}\r\n"
   end
 
   def initialize
