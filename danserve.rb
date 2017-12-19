@@ -3,12 +3,10 @@
 class Server
   def get(query)
     @response << "db: #{@db}\r\n"
-    query.each do |key, value|
-      next unless key == 'key'
-      if (lookup = @db[value])
-        respond "successful lookup: #{value} => #{lookup}"
-      else respond "failed lookup: no entry for #{value}"
-      end
+    return unless (value = query['key'])
+    if (lookup = @db[value])
+      respond "successful lookup: #{value} => #{lookup}"
+    else respond "failed lookup: no entry for #{value}"
     end
   end
 
