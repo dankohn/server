@@ -1,24 +1,13 @@
 class Server
-  def run_server
-    require 'socket'
-
-    server = TCPServer.new 4000
-    while session = server.accept
-      reset_response
-      parse session.gets
-      session.print @response
-      session.close
-    end
+  def get(key)
+    value = @db[key]
+    @response << "#{key} => #{value}\r\n"
   end
 
-  def reset_response
-    @response = <<~END_OF_RESPONSE
-    HTTP/1.1 200
-    Content-Type: text/plaintext\r\n
-    time: #{Time.now}
-    END_OF_RESPONSE
+  def initialize
+    @db = Hash.new
+    run_server
   end
-
 
   def parse(request)
     require 'uri'
@@ -31,7 +20,27 @@ class Server
     when '/set'
       set query
     when '/get'
-      get query
+      get query.values
+    end
+  end
+
+  def reset_response
+    @response = <<~END_OF_RESPONSE
+    HTTP/1.1 200
+    Content-Type: text/plaintext\r\n
+    time: #{Time.now}
+    END_OF_RESPONSE
+  end
+
+  def run_server
+    require 'socket'
+
+    server = TCPServer.new 4000
+    while session = server.accept
+      reset_response
+      parse session.gets
+      session.print @response
+      session.close
     end
   end
 
@@ -42,11 +51,6 @@ class Server
       @response << "#{key} => #{value}\r\n"
     end
     @response << "db: #{@db}\r\n"
-  end
-
-  def initialize
-    @db = Hash.new
-    run_server
   end
 end
 
