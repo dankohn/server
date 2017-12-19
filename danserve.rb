@@ -1,7 +1,13 @@
 class Server
-  def get(key)
-    value = @db[key]
-    @response << "#{key} => #{value}\r\n"
+  def get(query)
+    @response << "db: #{@db}\r\n"
+    query.each do |key, value|
+      next unless key == 'key'
+      if lookup = @db[value]
+        respond "successful lookup: #{value} => #{lookup}"
+      else respond "failed lookup: no entry for #{value}"
+      end
+    end
   end
 
   def initialize
@@ -13,14 +19,14 @@ class Server
     require 'uri'
     request_url = request.split(' ')[1]
     uri = URI(request_url)
-    @response << "path: #{uri.path}\r\n"
+    respond "path: #{uri.path}"
     query = URI::decode_www_form(uri.query || '').to_h
-    @response << "query: #{query}\r\n"
+    respond "query: #{query}"
     case uri.path
     when '/set'
       set query
     when '/get'
-      get query.values
+      get query
     end
   end
 
@@ -32,9 +38,12 @@ class Server
     END_OF_RESPONSE
   end
 
+  def respond(string)
+    @response << "#{string}\r\n"
+  end
+
   def run_server
     require 'socket'
-
     server = TCPServer.new 4000
     while session = server.accept
       reset_response
@@ -45,12 +54,12 @@ class Server
   end
 
   def set(query)
+    respond "db: #{@db}"
     query.each do |key, value|
-      @response << "db: #{@db}\r\n"
       @db[key] = value
-      @response << "#{key} => #{value}\r\n"
+      respond "assigned: #{key} => #{value}"
     end
-    @response << "db: #{@db}\r\n"
+    respond "db: #{@db}"
   end
 end
 
